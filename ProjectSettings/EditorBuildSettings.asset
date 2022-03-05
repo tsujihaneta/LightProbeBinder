@@ -4,5 +4,17 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/LightProbeBinder/Examples/Scenes/MainTimelineSample.unity
+    guid: 5a1e0fc4f838fbf45984a011cf0432e2
+  - enabled: 1
+    path: Assets/LightProbeBinder/Examples/Scenes/MainSwitchSample.unity
+    guid: 0007222ac06b5674b8d78002c4dd0770
+  - enabled: 1
+    path: Assets/LightProbeBinder/Examples/Scenes/Stages/StageA.unity
+    guid: b9d60fb989fb4704faa9294fc401bf25
+  - enabled: 1
+    path: Assets/LightProbeBinder/Examples/Scenes/Stages/StageB.unity
+    guid: 8a00c2fdf70ec1e47b02bd9829990fdb
   m_configObjects: {}
