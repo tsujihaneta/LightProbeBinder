@@ -122,7 +122,7 @@ namespace TsujihaTools.LightProbeBinder
                 EditorGUI.EndDisabledGroup();
             }
 
-            GUILayout.Space(10);
+            GUILayout.FlexibleSpace();
 
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
