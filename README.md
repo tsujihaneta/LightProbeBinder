@@ -8,6 +8,7 @@ An editor extension that restores light probes when the specified game object is
 ![image](https://user-images.githubusercontent.com/26054187/156904094-5070f03b-c54a-44a8-86bf-e61127bd2d43.png)
 ![image](https://user-images.githubusercontent.com/26054187/156904125-ac648e4c-3614-492b-9796-2596fd1cb982.png)
 
+使用方法
 1. 加算シーンとして使用する背景のみのシーンを作成します。
 2. staticで背景に使用するすべてのオブジェクトを一つのGameObjectの子オブジェクトにします。
 3. 加算シーンとして使用する背景のみのシーンを単体で開き、通常通りLightingウィンドウの「Generate Lighting」でライトをベイクします。
@@ -16,7 +17,7 @@ An editor extension that restores light probes when the specified game object is
 6. シーンのLightingDataからLightProbeのAssetがシーンと同名のフォルダ（ライトマップ出力と同じフォルダ）にエクスポートされ、RootオブジェクトにLightProbeRestorerコンポーネントがアタッチされます。
 7. 以降、このオブジェクトが有効化された際自動でLightProbeが読み込まれるようになります。
 
-
+How to use
 1. Creates a background-only scene to be used as an additive scene.
 2. Set all objects used for backgrounds at rest to be children of a single GameObject.
 3. Open a stand-alone background-only scene to be used as an additive scene and bake the lights as usual with "Generate Lighting" in the Lighting window.
