@@ -13,6 +13,14 @@ public static class SceneUtility
         }
     }
 
+    public static void UnoadSceneAsync(string name)
+    {
+        if (IsSceneLoaded(name))
+        {
+            SceneManager.UnloadSceneAsync(name);
+        }
+    }
+
     public static bool IsSceneLoaded(string name)
     {
         for (int i = 0; i < SceneManager.sceneCount; i++)
