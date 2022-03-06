@@ -1,5 +1,6 @@
 # LightProbeBinder
 [【Unity】Timelineとマルチシーンでライトベイク済みの背景モデルを切り替えるエディタ拡張『LightProbe Binder』を公開しました](https://qiita.com/drafts/084b0403839067d67a86/edit)
+
 An editor extension that restores light probes when the specified game object is loaded; Multi-Scene and Timeline support are also available.
 
 ![ezgif-4-86a13dc318](https://user-images.githubusercontent.com/26054187/156904064-8dc1c401-51a1-47fa-af48-80ee55b63479.gif)
