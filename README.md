@@ -3,11 +3,11 @@
 
 An editor extension that restores light probes when the specified game object is loaded; Multi-Scene and Timeline support are also available.
 
-**Before(Probes from the last scene added will be used)**
+**Before(Light probes from the last scene added will be used)**
 
 ![Before](https://user-images.githubusercontent.com/26054187/156917794-5ade96dc-a1a8-4ab8-b09a-deccdec9e295.gif)
 
-**After(Appropriate probes will be used)**
+**After(Appropriate light probes will be used)**
 
 ![After](https://user-images.githubusercontent.com/26054187/156917802-cc4a220e-f8f2-472d-bcec-4f02d0daae9b.gif)
 
