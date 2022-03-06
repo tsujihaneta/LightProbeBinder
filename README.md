@@ -16,6 +16,7 @@ An editor extension that restores light probes when the specified game object is
 6. シーンのLightingDataからLightProbeのAssetがシーンと同名のフォルダ（ライトマップ出力と同じフォルダ）にエクスポートされ、RootオブジェクトにLightProbeRestorerコンポーネントがアタッチされます。
 7. 以降、このオブジェクトが有効化された際自動でLightProbeが読み込まれるようになります。
 
+
 1. Creates a background-only scene to be used as an additive scene.
 2. Set all objects used for backgrounds at rest to be children of a single GameObject.
 3. Open a stand-alone background-only scene to be used as an additive scene and bake the lights as usual with "Generate Lighting" in the Lighting window.
@@ -23,5 +24,3 @@ An editor extension that restores light probes when the specified game object is
 5. Press "Store Prebe".
 6. A LightProbe Asset is exported from the scene's LightingData to a folder with the same name as the scene (the same folder as the lightmap output), and a LightProbeRestorer component is attached to the Root object.
 7. After that, LightProbe will be automatically loaded when the owner object is activated.
-
-Translated with www.DeepL.com/Translator (free version)
