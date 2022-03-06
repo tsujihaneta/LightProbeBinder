@@ -3,6 +3,12 @@
 
 An editor extension that restores light probes when the specified game object is loaded; Multi-Scene and Timeline support are also available.
 
+**Before**
+![Before](https://user-images.githubusercontent.com/26054187/156917794-5ade96dc-a1a8-4ab8-b09a-deccdec9e295.gif)
+
+**After**
+![After](https://user-images.githubusercontent.com/26054187/156917802-cc4a220e-f8f2-472d-bcec-4f02d0daae9b.gif)
+
 ![ezgif-4-86a13dc318](https://user-images.githubusercontent.com/26054187/156904064-8dc1c401-51a1-47fa-af48-80ee55b63479.gif)
 
 ![image](https://user-images.githubusercontent.com/26054187/156904094-5070f03b-c54a-44a8-86bf-e61127bd2d43.png)
