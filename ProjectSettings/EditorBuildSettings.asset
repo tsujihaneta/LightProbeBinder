@@ -19,5 +19,5 @@ EditorBuildSettings:
     guid: b9d60fb989fb4704faa9294fc401bf25
   - enabled: 1
     path: Assets/LightProbeBinder/Examples/Scenes/Stages/StageB.unity
-    guid: 8a00c2fdf70ec1e47b02bd9829990fdb
+    guid: a4a76aeef755af54fb3fdacf5c472cdf
   m_configObjects: {}

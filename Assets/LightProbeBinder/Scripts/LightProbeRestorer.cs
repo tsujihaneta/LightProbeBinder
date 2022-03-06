@@ -24,6 +24,7 @@ namespace TsujihaTools.LightProbeBinder
 			}
 
 			LightmapSettings.lightProbes = lightprobes;
+			//LightProbes.TetrahedralizeAsync();
 		}
 
 		void Update()
@@ -31,6 +32,7 @@ namespace TsujihaTools.LightProbeBinder
 			if (LightmapSettings.lightProbes == null)
 			{
 				LightmapSettings.lightProbes = lightprobes;
+				//LightProbes.TetrahedralizeAsync();
 			}
 		}
 
@@ -42,6 +44,7 @@ namespace TsujihaTools.LightProbeBinder
 			}
 
 			LightmapSettings.lightProbes = null;
+			//LightProbes.TetrahedralizeAsync();
 		}
 	}
 }
