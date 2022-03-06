@@ -20,7 +20,7 @@ namespace TsujihaTools.LightProbeBinder
         private static bool isOpenSceneSettings = true;
 
 
-        [MenuItem("Tool/Rendering/LightprobeBinder")]
+        [MenuItem("Tools/Rendering/LightprobeBinder")]
         private static void Open()
         {
             GetWindow<LightprobeBinderWindow>("LightprobeBinder");
