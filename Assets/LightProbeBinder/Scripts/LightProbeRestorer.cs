@@ -60,6 +60,7 @@ namespace TsujihaTools.LightProbeBinder
 			{
 				case LightProbeMergeType.Overwrite:
 					LightmapSettings.lightProbes = lightprobes;
+					LightProbes.TetrahedralizeAsync();
 					break;
 				case LightProbeMergeType.Additive:
 					LightProbes.TetrahedralizeAsync();
@@ -73,6 +74,7 @@ namespace TsujihaTools.LightProbeBinder
 			{
 				case LightProbeMergeType.Overwrite:
 					LightmapSettings.lightProbes = null;
+					LightProbes.TetrahedralizeAsync();
 					break;
 				case LightProbeMergeType.Additive:
 					LightProbes.TetrahedralizeAsync();
