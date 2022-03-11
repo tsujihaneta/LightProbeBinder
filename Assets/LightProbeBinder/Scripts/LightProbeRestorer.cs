@@ -54,7 +54,7 @@ namespace TsujihaTools.LightProbeBinder
 			Purge();
 		}
 
-		void Merge()
+		public void Merge()
 		{
 			switch (MergeType)
 			{
@@ -67,7 +67,7 @@ namespace TsujihaTools.LightProbeBinder
 			}
 		}
 
-		void Purge()
+		public void Purge()
 		{
 			switch (MergeType)
 			{
