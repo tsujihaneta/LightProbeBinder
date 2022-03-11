@@ -4,27 +4,32 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using System.IO;
 using System.Linq;
 
 namespace TsujihaTools.LightProbeBinder
 {
-    public class LightprobeBinderWindow : EditorWindow
+    public class LightProbeBinderWindow : EditorWindow
     {
-        public static readonly string LightprobeAssetName = "Lightprobe.asset";
+        private static readonly Vector2 WindowMinSize = new Vector2(500, 400);
 
-        private static GameObject owner = null;
-        private static LightProbes lightProbeDataAsset = null;
-        private static bool isWarningMultipleLoader = false;
-        private static bool isOpenStatus = true;
-        private static bool isOpenSceneSettings = true;
+        private static bool isOpenProjectSettings = true;
+        private static bool isOpenStatusMonitor = true;
+        private static bool isOpenBindingSettings = true;
+        private static bool isOpenOwnerManagement = true;
+        private static bool isOpenOthers = true;
 
+        public static GameObject root = null;
 
-        [MenuItem("Tools/Rendering/LightprobeBinder")]
-        private static void Open()
+        [MenuItem("Tools/Rendering/Light Probe Binder")]
+        public static void Open()
         {
-            GetWindow<LightprobeBinderWindow>("LightprobeBinder");
+            var window = GetWindow<LightProbeBinderWindow>("Light Probe Binder");
 
+            Init();
+        }
+
+        private static void Init()
+		{
             ResetSettings();
 
             EditorSceneManager.sceneOpened -= OnSceneLoaded;
@@ -46,16 +51,28 @@ namespace TsujihaTools.LightProbeBinder
 
         private static void ResetSettings()
         {
-            SetLightProbeDataAsset();
-            SetOwnerAuto();
         }
 
         private void OnGUI()
         {
-            minSize = new Vector2(400, 160);
+            // ウィンドウサイズ.
+            minSize = WindowMinSize;
 
-            isOpenStatus = CustomUI.Foldout(isOpenStatus, "Status");
-            if (isOpenStatus)
+            // プロジェクト設定.
+            isOpenProjectSettings = CustomUI.Foldout(isOpenProjectSettings, "Project Settings");
+            if (isOpenProjectSettings)
+            {
+                if (GUILayout.Button(new GUIContent("Open Project Settings", "Open Project Settings / Light Probe Binder"), GUILayout.Width(150), GUILayout.Height(20)))
+                {
+                    SettingsService.OpenProjectSettings("Project/Light Probe Binder");
+                }
+            }
+
+            CustomUI.HorizontalLine(position.width);
+
+            // ステータス.
+            isOpenStatusMonitor = CustomUI.Foldout(isOpenStatusMonitor, "Status Monitor");
+            if (isOpenStatusMonitor)
             {
                 EditorGUILayout.LabelField("Active Scene : " + SceneManager.GetActiveScene().name);
 
@@ -65,174 +82,157 @@ namespace TsujihaTools.LightProbeBinder
 
                 if (LightmapSettings.lightProbes == null)
                 {
-                    var lightProbeRestorers = FindObjectsOfType<LightProbeGroup>()
+                    var lightProbeGroups = FindObjectsOfType<LightProbeGroup>()
                         .Where(obj => obj.gameObject.scene == SceneManager.GetActiveScene())
                         .ToList();
 
-                    string warningMessage = "LightmapSettings.lightProbes does not exist in the scene.";
+                    string warningMessage = "LightProbes does not exist in the scene.";
                     warningMessage += "\nPlease";
-                    if (!lightProbeRestorers.Any())
+
+                    var directory = LightProbeBinderProcessor.GetSceneDirectoryPath();
+                    if (!LightProbeBinderProcessor.ExistAsset<LightingDataAsset>(directory))
                     {
-                        warningMessage += " add LightProbeGroup and";
+
+                        if (!lightProbeGroups.Any())
+                        {
+                            warningMessage += " add LightProbeGroup to scene and";
+                        }
+                        warningMessage += " generate lighting.";
                     }
-                    warningMessage += " generate lighting.";
+                    else
+                    {
+                        warningMessage += " reload scene.";
+                    }
 
                     EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
                 }
             }
 
-            var splitterRect = EditorGUILayout.GetControlRect(false, GUILayout.Height(1));
-            splitterRect.x = 0;
-            splitterRect.width = position.width;
-            EditorGUI.DrawRect(splitterRect, Color.gray);
+            CustomUI.HorizontalLine(position.width);
 
-            isOpenSceneSettings = CustomUI.Foldout(isOpenSceneSettings, "SceneSettings");
-            if (isOpenSceneSettings)
+            var owners = LightProbeBinderProcessor.GetOwners();
+
+            isOpenBindingSettings = CustomUI.Foldout(isOpenBindingSettings, "Binding Settings");
+            if (isOpenBindingSettings)
             {
-                owner = EditorGUILayout.ObjectField(new GUIContent("Owner Object", "When this object is activated, it replaces the LightProbes in the scene."), owner, typeof(GameObject), true) as GameObject;
+                EditorGUILayout.BeginHorizontal();
 
-                var lightProbeRestorers = FindObjectsOfType<LightProbeRestorer>()
-                    .Where(obj => obj.gameObject.scene == SceneManager.GetActiveScene())
-                    .ToList();
-
-                if (lightProbeRestorers.Count > 1)
-                {
-                    string warningMessage = "There are " + lightProbeRestorers.Count + " LightProbeRestorer components in the scene.";
-                    foreach (var item in lightProbeRestorers)
-                    {
-                        warningMessage += "\n";
-                        warningMessage += item.gameObject.name;
-                    }
-
-                    EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
-
-                    isWarningMultipleLoader = true;
-                }
-                else
-                {
-                    if (isWarningMultipleLoader)
-                    {
-                        SetOwnerAuto();
-                        isWarningMultipleLoader = false;
-                    }
-                }
-
-                EditorGUI.BeginDisabledGroup(true);
-                lightProbeDataAsset = EditorGUILayout.ObjectField(new GUIContent("Light Probe"), lightProbeDataAsset, typeof(LightProbes), true) as LightProbes;
+                EditorGUI.BeginDisabledGroup(owners.Any());
+                root = EditorGUILayout.ObjectField(new GUIContent("Root Object", "When this object is activated, it replaces the LightProbes in the scene."), root, typeof(GameObject), true) as GameObject;
                 EditorGUI.EndDisabledGroup();
+
+                EditorGUI.BeginDisabledGroup(owners.Any() || root == null || LightmapSettings.lightProbes == null);
+                if (GUILayout.Button(new GUIContent("Subscribe", "Add to Owner Object."), GUILayout.Width(150)))
+                {
+                    OnClickSubscribeButton(root);
+                    root = null;
+                }
+                EditorGUILayout.EndHorizontal();
+                EditorGUI.EndDisabledGroup();
+
+                if (LightmapSettings.lightProbes == null)
+                {
+                    string warningMessage = "LightProbes does not exist in the scene.\nPlease check the status monitor.";
+                    EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
+                }
+
+                if (owners.Any())
+                {
+                    string errorMessage = "The owner of this scene is already registered.";
+                    EditorGUILayout.HelpBox(errorMessage, MessageType.Info);
+                }
             }
 
-            GUILayout.FlexibleSpace();
+            CustomUI.HorizontalLine(position.width);
 
-            EditorGUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button(new GUIContent("Store Probe", "Generate LightProbe asset and add LightProbeRestorer component to Owner Object."), GUILayout.Width(150), GUILayout.Height(20)))
+            isOpenOwnerManagement = CustomUI.Foldout(isOpenOwnerManagement, "Owner Management");
+            if (isOpenOwnerManagement)
             {
-                OnClickStoreButton();
+                foreach (var owner in owners)
+                {
+                    EditorGUILayout.BeginHorizontal();
+
+                    EditorGUI.BeginDisabledGroup(true);
+                    GameObject ownerDisp = EditorGUILayout.ObjectField(owner.gameObject, typeof(GameObject), true) as GameObject;
+                    EditorGUILayout.Space(5);
+                    LightProbes lightProbeDataAsset = EditorGUILayout.ObjectField(owner.Lightprobes, typeof(LightProbes), true) as LightProbes;
+                    EditorGUI.EndDisabledGroup();
+
+                    owner.MergeType = (LightProbeMergeType)EditorGUILayout.EnumPopup(owner.MergeType);
+
+                    EditorGUI.BeginDisabledGroup(lightProbeDataAsset == null);
+                    if (GUILayout.Button(new GUIContent("Activate Probe", "Use generated probes.")))
+                    {
+                        OnClickActivateButton(owner);
+                    }
+                    EditorGUI.EndDisabledGroup();
+
+                    if (GUILayout.Button(new GUIContent("Unsubscribe", "Remove from Owner Object."), GUILayout.Width(150)))
+                    {
+                        OnClickUnsubscribeButton(owner.gameObject);
+                    }
+
+                    EditorGUILayout.EndHorizontal();
+
+                    if (lightProbeDataAsset == null)
+                    {
+                        var errorMessage = owner.gameObject.name + " does not have a light probe.\nPlease configure in Inspector or unsubscribe.";
+                        EditorGUILayout.HelpBox(errorMessage, MessageType.Error);
+                    }
+                }
+
+                if (owners.Count > 1)
+                {
+                    string errorMessage = "There are " + owners.Count + " owners in the scene. There must be only one.";
+                    EditorGUILayout.HelpBox(errorMessage, MessageType.Error);
+                }
             }
-            EditorGUILayout.EndHorizontal();
+
+            isOpenOthers = CustomUI.Foldout(isOpenOthers, "Others");
+            if (isOpenOthers)
+            {
+                var unusedProbes = LightProbeBinderProcessor.GetUnusedProbes();
+                if(unusedProbes != null)
+				{
+                    foreach (var probe in unusedProbes)
+					{
+                        EditorGUILayout.BeginHorizontal();
+
+                        EditorGUI.BeginDisabledGroup(true);
+                        GameObject unusedProbeDisp = EditorGUILayout.ObjectField(probe, typeof(GameObject), true) as GameObject;
+                        EditorGUI.EndDisabledGroup();
+
+                        if (GUILayout.Button(new GUIContent("Delete", "Delete file : " + probe), GUILayout.Width(100)))
+                        {
+                            var probePath = AssetDatabase.GetAssetPath(probe);
+                            AssetDatabase.DeleteAsset(probePath);
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+                    }
+
+                    if (unusedProbes.Count > 1)
+                    {
+                        string warningMessage = "Unused light probes found.";
+                        EditorGUILayout.HelpBox(warningMessage, MessageType.Warning);
+                    }
+                }
+            }
         }
 
-        private static void OnClickStoreButton()
-		{
-            ExecuteStore();
-        }
-
-        private static void ExecuteStore()
+        private static void OnClickActivateButton(LightProbeRestorer restorer)
         {
-            LightProbes lightProbes;
-            if (!TryGenerateLightProbeAsset(out lightProbes))
-            {
-                return;
-            }
-
-            lightProbeDataAsset = lightProbes;
-
-            if (owner == null)
-            {
-                return;
-            }
-
-            var lightProbeRestorer = owner.GetComponent<LightProbeRestorer>();
-            if (lightProbeRestorer == null)
-            {
-                lightProbeRestorer = owner.AddComponent<LightProbeRestorer>();
-            }
-
-            lightProbeRestorer.Lightprobes = lightProbes;
+            LightmapSettings.lightProbes = restorer.Lightprobes;
         }
 
-        private static void SetLightProbeDataAsset()
+        private static void OnClickSubscribeButton(GameObject target)
         {
-            string assetFilePath = GetLightprobePath();
-            lightProbeDataAsset = AssetDatabase.LoadAssetAtPath(assetFilePath, typeof(LightProbes)) as LightProbes;
+            LightProbeBinderProcessor.ExecuteStore(target);
         }
 
-        private static void SetOwnerAuto()
+        private static void OnClickUnsubscribeButton(GameObject target)
         {
-            var lightProbeRestorers = FindObjectsOfType<LightProbeRestorer>()
-                .Where(obj => obj.gameObject.scene == SceneManager.GetActiveScene())
-                .ToList();
-
-            if (lightProbeRestorers.Any())
-            {
-                owner = lightProbeRestorers.FirstOrDefault().gameObject;
-                return;
-            }
-
-            Scene scene = SceneManager.GetActiveScene();
-            GameObject[] rootObjects = scene.GetRootGameObjects();
-            if (rootObjects.Any())
-            {
-                owner = rootObjects.FirstOrDefault();
-                return;
-            }
-        }
-
-        private static bool TryGenerateLightProbeAsset(out LightProbes _lightProbes)
-        {
-            CreateSceneDirectory();
-
-            string assetFilePath = GetLightprobePath();
-
-            if(LightmapSettings.lightProbes == null)
-			{
-                _lightProbes = null;
-                return false;
-			}
-
-            LightProbes lightProbes = GameObject.Instantiate(LightmapSettings.lightProbes);
-            if (lightProbes == null)
-            {
-                _lightProbes = null;
-                return false;
-            }
-
-            AssetDatabase.CreateAsset(lightProbes, assetFilePath);
-            Debug.Log("LightProbe file generated.\n" + assetFilePath);
-
-            _lightProbes = lightProbes;
-            return true;
-        }
-
-        private static void CreateSceneDirectory()
-        {
-            Scene scene = SceneManager.GetActiveScene();
-            string path = Path.Combine(Path.GetDirectoryName(scene.path), Path.GetFileNameWithoutExtension(scene.name));
-            Directory.CreateDirectory(path);
-        }
-
-        private static string GetLightprobePath()
-        {
-            Scene scene = SceneManager.GetActiveScene();
-            if(scene == null)
-			{
-                return null;
-			}
-
-            string path = Path.Combine(Path.GetDirectoryName(scene.path), Path.GetFileNameWithoutExtension(scene.path), LightprobeAssetName);
-
-            return path;
+            LightProbeBinderProcessor.ExecuteClear(target);
         }
     }
 
@@ -264,6 +264,14 @@ namespace TsujihaTools.LightProbeBinder
             }
 
             return display;
+        }
+
+        public static void HorizontalLine(float width)
+		{
+            var splitterRect = EditorGUILayout.GetControlRect(false, GUILayout.Height(1));
+            splitterRect.x = 0;
+            splitterRect.width = width;
+            EditorGUI.DrawRect(splitterRect, Color.gray);
         }
     }
 }

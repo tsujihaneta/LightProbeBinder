@@ -6,13 +6,23 @@ namespace TsujihaTools.LightProbeBinder
 	[ExecuteAlways]
 	public class LightProbeRestorer : MonoBehaviour
 	{
-		[SerializeField] private LightProbes lightprobes;
+		[SerializeField] private LightProbes lightprobes = null;
 		public LightProbes Lightprobes {
 			get {
 				return lightprobes;
 			}
 			set {
 				lightprobes = value;
+			}
+		}
+
+		[SerializeField] private LightProbeMergeType mergeType = LightProbeMergeType.Overwrite;
+		public LightProbeMergeType MergeType {
+			get {
+				return mergeType;
+			}
+			set {
+				mergeType = value;
 			}
 		}
 
@@ -23,16 +33,14 @@ namespace TsujihaTools.LightProbeBinder
 				return;
 			}
 
-			LightmapSettings.lightProbes = lightprobes;
-			//LightProbes.TetrahedralizeAsync();
+			Merge();
 		}
 
 		void Update()
 		{
 			if (LightmapSettings.lightProbes == null)
 			{
-				LightmapSettings.lightProbes = lightprobes;
-				//LightProbes.TetrahedralizeAsync();
+				Merge();
 			}
 		}
 
@@ -43,8 +51,33 @@ namespace TsujihaTools.LightProbeBinder
 				return;
 			}
 
-			LightmapSettings.lightProbes = null;
-			//LightProbes.TetrahedralizeAsync();
+			Purge();
+		}
+
+		void Merge()
+		{
+			switch (MergeType)
+			{
+				case LightProbeMergeType.Overwrite:
+					LightmapSettings.lightProbes = lightprobes;
+					break;
+				case LightProbeMergeType.Additive:
+					LightProbes.TetrahedralizeAsync();
+					break;
+			}
+		}
+
+		void Purge()
+		{
+			switch (MergeType)
+			{
+				case LightProbeMergeType.Overwrite:
+					LightmapSettings.lightProbes = null;
+					break;
+				case LightProbeMergeType.Additive:
+					LightProbes.TetrahedralizeAsync();
+					break;
+			}
 		}
 	}
 }
